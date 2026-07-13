@@ -15,7 +15,7 @@ def register_subscribers() -> None:
         return
     _wired = True
     subscribe_task("article.discovered", "forge.enrichment.score_article")
+    subscribe_task("article.saved", "forge.enrichment.extract_knowledge")
     # Later phases append here:
-    #   article.saved  → forge.enrichment.extract_knowledge
     #   article.enriched → forge.enrichment.embed_article
     #   article.read   → forge.reviews.generate_items, forge.analytics.record_read

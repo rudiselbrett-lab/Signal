@@ -28,8 +28,12 @@ def upgrade() -> None:
         sa.Column("name", sa.String(100), nullable=False),
         sa.Column("color", sa.String(20), nullable=False),
         sa.Column("priority_weight", sa.Float(), nullable=False),
-        sa.Column("created_at", sa.DateTime(), server_default=sa.func.now(), nullable=False),
-        sa.Column("updated_at", sa.DateTime(), server_default=sa.func.now(), nullable=False),
+        sa.Column(
+            "created_at", sa.DateTime(timezone=True), server_default=sa.func.now(), nullable=False
+        ),
+        sa.Column(
+            "updated_at", sa.DateTime(timezone=True), server_default=sa.func.now(), nullable=False
+        ),
         sa.UniqueConstraint("user_id", "name", name="uq_categories_user_id"),
     )
     op.create_index("ix_categories_user_id", "categories", ["user_id"])
@@ -49,12 +53,16 @@ def upgrade() -> None:
         sa.Column("config", JSONB(), nullable=False),
         sa.Column("enabled", sa.Boolean(), nullable=False),
         sa.Column("priority_weight", sa.Float(), nullable=False),
-        sa.Column("last_checked_at", sa.DateTime(), nullable=True),
-        sa.Column("last_success_at", sa.DateTime(), nullable=True),
+        sa.Column("last_checked_at", sa.DateTime(timezone=True), nullable=True),
+        sa.Column("last_success_at", sa.DateTime(timezone=True), nullable=True),
         sa.Column("failure_count", sa.Integer(), nullable=False),
         sa.Column("status", sa.String(32), nullable=False),
-        sa.Column("created_at", sa.DateTime(), server_default=sa.func.now(), nullable=False),
-        sa.Column("updated_at", sa.DateTime(), server_default=sa.func.now(), nullable=False),
+        sa.Column(
+            "created_at", sa.DateTime(timezone=True), server_default=sa.func.now(), nullable=False
+        ),
+        sa.Column(
+            "updated_at", sa.DateTime(timezone=True), server_default=sa.func.now(), nullable=False
+        ),
     )
     op.create_index("ix_sources_user_id", "sources", ["user_id"])
 

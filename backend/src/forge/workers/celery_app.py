@@ -5,6 +5,7 @@ another (see ARCHITECTURE.md §10). All tasks must be idempotent.
 """
 
 from celery import Celery
+from celery.schedules import crontab
 
 from forge.config import get_settings
 
@@ -29,7 +30,13 @@ celery_app.conf.update(
         "forge.reviews.*": {"queue": "reviews"},
         "forge.analytics.*": {"queue": "analytics"},
     },
-    beat_schedule={},  # populated by forge.workers.schedule
+    beat_schedule={
+        "discover-sources": {
+            "task": "forge.ingestion.discover_all",
+            "schedule": crontab(minute=0, hour=f"*/{settings.discovery_interval_hours}"),
+            "options": {"queue": "ingestion"},
+        },
+    },
     timezone="UTC",
 )
 

@@ -7,9 +7,18 @@ schema from day one), and created/updated timestamps.
 import uuid
 from datetime import datetime
 
-from sqlalchemy import MetaData, func
+from sqlalchemy import DateTime, MetaData, func
+from sqlalchemy import Enum as SAEnum
 from sqlalchemy.dialects.postgresql import UUID as PGUUID
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
+
+
+def str_enum(enum_cls: type, length: int = 32) -> SAEnum:
+    """VARCHAR-backed enum: no PG enum types to migrate when values change."""
+    return SAEnum(
+        enum_cls, native_enum=False, length=length, values_callable=lambda e: [m.value for m in e]
+    )
+
 
 # Explicit naming conventions so Alembic migrations are deterministic.
 NAMING_CONVENTION = {
@@ -23,6 +32,8 @@ NAMING_CONVENTION = {
 
 class Base(DeclarativeBase):
     metadata = MetaData(naming_convention=NAMING_CONVENTION)
+    # All datetimes are timestamptz; naive timestamps are a bug by construction.
+    type_annotation_map = {datetime: DateTime(timezone=True)}  # noqa: RUF012
 
 
 class ForgeTableMixin:

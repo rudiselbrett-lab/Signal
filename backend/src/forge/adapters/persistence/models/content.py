@@ -2,6 +2,7 @@ import uuid
 from datetime import datetime
 from typing import Any
 
+from pgvector.sqlalchemy import Vector
 from sqlalchemy import ForeignKey, Integer, String, Text, UniqueConstraint
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.dialects.postgresql import UUID as PGUUID
@@ -9,7 +10,10 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from forge.adapters.persistence.base import Base, ForgeTableMixin, str_enum
 from forge.adapters.persistence.models.sources import Source
+from forge.config import get_settings
 from forge.domain.content import ArticleStatus, EnrichmentStatus
+
+EMBEDDING_DIM = get_settings().embedding_dimensions
 
 
 class Article(ForgeTableMixin, Base):
@@ -34,6 +38,11 @@ class Article(ForgeTableMixin, Base):
     language: Mapped[str | None] = mapped_column(String(10), nullable=True)
     content_hash: Mapped[str | None] = mapped_column(String(64), nullable=True, index=True)
     item_metadata: Mapped[dict[str, Any]] = mapped_column(JSONB, default=dict)
+
+    embedding: Mapped[list[float] | None] = mapped_column(
+        Vector(EMBEDDING_DIM), nullable=True
+    )  # whole-article: title + summary + key ideas
+    embedding_version: Mapped[str | None] = mapped_column(String(20), nullable=True)
 
     status: Mapped[ArticleStatus] = mapped_column(
         str_enum(ArticleStatus), default=ArticleStatus.DISCOVERED, index=True

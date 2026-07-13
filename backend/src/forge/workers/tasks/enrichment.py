@@ -3,12 +3,16 @@
 import asyncio
 from uuid import UUID
 
+from forge.adapters.embeddings import OpenAIEmbedder
 from forge.adapters.llm import AnthropicLLM
 from forge.adapters.persistence.db import session_scope
 from forge.adapters.persistence.repositories.knowledge import SqlKnowledgeRepository
 from forge.adapters.persistence.repositories.scoring import SqlScoringRepository
+from forge.adapters.persistence.repositories.search import SqlSearchRepository
+from forge.services.embeddings.service import EmbeddingsService
 from forge.services.extraction.service import ExtractionService
-from forge.services.scoring.service import NullSimilaritySignals, ScoringService
+from forge.services.scoring.service import ScoringService
+from forge.services.scoring.signals import SqlSimilaritySignals
 from forge.workers.celery_app import celery_app
 
 
@@ -27,7 +31,7 @@ async def _score_article(article_id: UUID, user_id: UUID) -> None:
         service = ScoringService(
             repo=SqlScoringRepository(session),
             llm=AnthropicLLM(),
-            signals=NullSimilaritySignals(),
+            signals=SqlSimilaritySignals(SqlSearchRepository(session), OpenAIEmbedder()),
         )
         await service.score_article(user_id, article_id)
 
@@ -46,3 +50,19 @@ async def _extract_knowledge(article_id: UUID, user_id: UUID) -> None:
     async with session_scope() as session:
         service = ExtractionService(repo=SqlKnowledgeRepository(session), llm=AnthropicLLM())
         await service.extract(user_id, article_id)
+
+
+@celery_app.task(
+    name="forge.enrichment.embed_article",
+    autoretry_for=(Exception,),
+    retry_backoff=True,
+    retry_kwargs={"max_retries": 3},
+)
+def embed_article(article_id: str, user_id: str) -> None:
+    asyncio.run(_embed_article(UUID(article_id), UUID(user_id)))
+
+
+async def _embed_article(article_id: UUID, user_id: UUID) -> None:
+    async with session_scope() as session:
+        service = EmbeddingsService(repo=SqlSearchRepository(session), embedder=OpenAIEmbedder())
+        await service.embed_article(user_id, article_id)

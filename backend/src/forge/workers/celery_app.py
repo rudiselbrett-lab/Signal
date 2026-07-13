@@ -36,6 +36,11 @@ celery_app.conf.update(
             "schedule": crontab(minute=0, hour=f"*/{settings.discovery_interval_hours}"),
             "options": {"queue": "ingestion"},
         },
+        "materialize-review-due": {
+            "task": "forge.reviews.materialize_due",
+            "schedule": crontab(minute=0, hour=5),
+            "options": {"queue": "reviews"},
+        },
     },
     timezone="UTC",
 )

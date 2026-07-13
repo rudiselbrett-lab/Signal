@@ -17,5 +17,6 @@ def register_subscribers() -> None:
     subscribe_task("article.discovered", "forge.enrichment.score_article")
     subscribe_task("article.saved", "forge.enrichment.extract_knowledge")
     subscribe_task("article.enriched", "forge.enrichment.embed_article")
+    subscribe_task("article.read", "forge.reviews.generate_items")
     # Later phases append here:
-    #   article.read   → forge.reviews.generate_items, forge.analytics.record_read
+    #   article.read / review.completed / suggestion.dismissed → analytics projections

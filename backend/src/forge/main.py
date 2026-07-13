@@ -12,6 +12,7 @@ from forge.adapters.persistence.db import dispose_engine
 from forge.api.errors import register_error_handlers
 from forge.api.v1 import api_router
 from forge.config import get_settings
+from forge.events.wiring import register_subscribers
 
 
 def _configure_logging() -> None:
@@ -33,6 +34,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
 
 def create_app() -> FastAPI:
     _configure_logging()
+    register_subscribers()
     settings = get_settings()
     app = FastAPI(
         title="Forge API",

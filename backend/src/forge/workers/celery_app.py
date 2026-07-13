@@ -41,3 +41,9 @@ celery_app.conf.update(
 )
 
 celery_app.autodiscover_tasks(["forge.workers"])
+
+# Cross-context event reactions must be registered in every process that
+# publishes or consumes domain events.
+from forge.events.wiring import register_subscribers  # noqa: E402
+
+register_subscribers()

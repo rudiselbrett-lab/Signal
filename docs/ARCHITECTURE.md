@@ -399,9 +399,11 @@ Score = deterministic arithmetic over LLM-assessed and computed components. The 
 | Novelty | 20 | inverse max-similarity vs. existing library (semantic dedupe distance) — "do I already know this?" |
 | Credibility | 20 | source-type base rate + author/domain reputation + LLM assessment of evidence quality |
 | Practicality | 15 | LLM: actionable takeaways vs. news/opinion |
-| Knowledge Gap | 15 | overlap with topics where `topic_mastery` is low but interest is high |
+| Knowledge Gap | 10 | overlap with topics where `topic_mastery` is low but interest is high |
 | Reading Time Bonus | 5 | fits user's typical session length; long reads aren't penalized, just not bonused |
 | **Overall** | **100** | sum |
+
+> Implementation note: the product spec's example maxima (30/20/20/15/15/5) sum to 105; knowledge gap is trimmed to 10 so that "components sum exactly to the overall score" — the key explainability property — holds by construction.
 
 Every component stores a one-line `rationale` → the UI renders the exact breakdown shown in the product spec. `scoring_version` allows re-scoring the backlog when weights change. Difficulty and reading time are computed here too (readability metrics + word count) and copied onto the article.
 
